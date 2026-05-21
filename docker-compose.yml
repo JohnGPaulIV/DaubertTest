@@ -1,0 +1,56 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: myapp-postgres
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: daubert
+      POSTGRES_USER: daubert_user
+      POSTGRES_PASSWORD: daubert_password
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    
+    networks:
+      - daubert-network
+    
+  backend:
+    build:
+      context: ./backend
+
+    container_name: daubert-backend
+
+    restart: unless-stopped
+
+    environment:
+      DATABASE_RUL: postgres://daubert_user:daubert_password@postgres:5432/daubert
+    
+    depends_on:
+      - postgres
+
+    networks:
+      - daubert-network
+    
+  frontend:
+    build:
+      context: ./frontend
+    
+    container_name: daubert-frontend
+
+    restart: unless-stopped
+
+    ports:
+      - "80:80"
+    
+    depends_on:
+      - backend
+    
+    networks:
+      - daubert-network
+    
+volumes:
+  postgres_data:
+
+networks:
+  daubert-network:
